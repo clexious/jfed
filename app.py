@@ -12,18 +12,18 @@ def get_modified_ics():
         content = response.text
         lines = content.splitlines()
         new_lines = []
+        x_alt_desc_content = ""
+
         for line in lines:
+            if line.startswith("X-ALT-DESC;FMTTYPE=text/html:"):
+                # Extrai o conteúdo do campo X-ALT-DESC
+                x_alt_desc_content = line[len("X-ALT-DESC;FMTTYPE=text/html:"):]
+
             if line.startswith("DESCRIPTION:"):
-                # Extrai o conteúdo de DESCRIPTION
-                description_content = line[len("DESCRIPTION:"):]
-
-                # Cria a linha X-ALT-DESC com o mesmo conteúdo de DESCRIPTION
-                x_alt_desc_line = f"X-ALT-DESC;FMTTYPE=text/html:{description_content}"
-
-                # Substitui DESCRIPTION por X-ALT-DESC
-                new_lines.append(x_alt_desc_line)
+                # Substitui o conteúdo do campo DESCRIPTION pelo conteúdo do campo X-ALT-DESC
+                new_lines.append(f"DESCRIPTION:{x_alt_desc_content}")
             else:
-                # Para as linhas que não são DESCRIPTION, adicione normalmente
+                # Adiciona as outras linhas normalmente
                 new_lines.append(line)
 
         return "\n".join(new_lines)
