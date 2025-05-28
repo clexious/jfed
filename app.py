@@ -1,14 +1,12 @@
-from flask import Flask, Response
-import requests
 import re
+import requests
 
 def clean_description(text):
     # Junta quebras de linha dentro do campo DESCRIPTION quando não são finais de frase
     def fix_linebreaks(desc):
-        # Substitui quebras de linha seguidas por letras minúsculas ou espaços
         return re.sub(
-            r'(?<![\.\?!:])\n(?=[a-z0-9])',  # quebra de linha que não segue pontuação e precede letra minúscula/número
-            ' ',  # substitui por espaço
+            r'(?<![\.\?!:])\n(?=[a-z0-9])',
+            ' ',
             desc
         )
 
@@ -26,11 +24,14 @@ def get_modified_ics():
     if response.status_code == 200:
         ics_content = response.text
 
-        # Corrige quebras de linha e melhora URLs
+        # Corrige quebras de linha no DESCRIPTION
         ics_content = clean_description(ics_content)
 
-        # Torna URLs mais visíveis (opcional)
+        # Adiciona quebra de linha antes de URLs (opcional)
         ics_content = re.sub(r'(https?://[^\s]+)', r'\n\1', ics_content)
+
+        # Remove todos os underlines
+        ics_content = ics_content.replace('_', '')
 
         return ics_content
     else:
