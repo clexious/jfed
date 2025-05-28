@@ -7,32 +7,35 @@ app = Flask(__name__)
 ICS_SOURCE_URL = "https://jlive.app/markets/cincinnati/ics-feed/feed.ics?token=eyJwayI6ImNpbmNpbm5hdGkiLCJjb21tdW5pdHlfY2FsZW5kYXIiOnRydWV9:1u6suP:rmMCXGHV2YBVnadKQmYjW-3O19e9UPhzz8f-b-OdUU8&lg=en"
 
 def sanitize_description(text):
+    # Substitui literalmente os padrões \\n e \\,
+    text = text.replace("\\\\n", " ").replace("\\\\,", ",")
+    
+    # Substitui padrões simples \n e \, também (caso o texto já venha decodificado)
+    text = text.replace("\\n", " ").replace("\\,", ",")
+
+    # Remove barras invertidas restantes
+    text = text.replace("\\", "")
+
     # Remove underscores
     text = text.replace("_", "")
-    
+
     # Simula negrito: **texto** → TEXTO
-    def bold_replacer(match):
-        return match.group(1).upper()
-    text = re.sub(r"\*\*(.*?)\*\*", bold_replacer, text)
-
-    # Corrige vírgulas escapadas
-    text = text.replace("\\,", ",")
-
-    # Remove \n e barras invertidas
-    text = text.replace("\\n", " ").replace("\\", " ")
+    text = re.sub(r"\*\*(.*?)\*\*", lambda m: m.group(1).upper(), text)
 
     # URLs em nova linha
-    url_pattern = r"(https?://[^\s]+)"
-    text = re.sub(url_pattern, r"\n\1", text)
+    text = re.sub(r"(https?://[^\s]+)", r"\n\1", text)
 
     # Remove espaços duplicados
     text = re.sub(r" +", " ", text)
 
-    # Quebra de parágrafo após ponto final (sem quebrar URLs)
-    text = re.sub(r"(?<!\w)(\.)(\s+)", r".\n\n", text)
+    # Quebra de parágrafo após ponto final (evita URLs)
+    text = re.sub(r"\.(\s+)", ".\n\n", text)
 
     # Remove espaços antes de quebras de linha
     text = re.sub(r" *\n", "\n", text)
+
+    # Remove quebras de linha duplicadas extras (garante apenas 2 no máximo)
+    text = re.sub(r"\n{3,}", "\n\n", text)
 
     return text.strip()
 
