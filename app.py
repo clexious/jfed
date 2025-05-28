@@ -7,35 +7,23 @@ app = Flask(__name__)
 ICS_SOURCE_URL = "https://jlive.app/markets/cincinnati/ics-feed/feed.ics?token=eyJwayI6ImNpbmNpbm5hdGkiLCJjb21tdW5pdHlfY2FsZW5kYXIiOnRydWV9:1u6suP:rmMCXGHV2YBVnadKQmYjW-3O19e9UPhzz8f-b-OdUU8&lg=en"
 
 def clean_description(text):
-    # Função que limpa e reestrutura o conteúdo do campo DESCRIPTION
     def fix_description(desc):
-        # Remove sublinhado
+        # Remove soft breaks do formato .ics (linha quebrada com "=" no final)
+        desc = re.sub(r'=\r?\n', '', desc)
+
+        # Remove underscores
         desc = desc.replace('_', '')
 
-        # Divide por parágrafos (dupla quebra de linha ou linha em branco)
+        # Divide por parágrafos (linhas em branco)
         paragraphs = re.split(r'\n\s*\n', desc)
 
         cleaned_paragraphs = []
         for para in paragraphs:
-            lines = para.strip().split('\n')
-            new_lines = []
+            # Remove quebras de linha dentro do parágrafo e espaços duplicados
+            single_line = ' '.join(para.strip().splitlines())
+            single_line = re.sub(r'\s{2,}', ' ', single_line)
+            cleaned_paragraphs.append(single_line.strip())
 
-            buffer = ""
-            for line in lines:
-                if re.match(r'^https?://', line.strip()):
-                    # Se a linha anterior tiver conteúdo acumulado, adiciona
-                    if buffer:
-                        new_lines.append(buffer.strip())
-                        buffer = ""
-                    new_lines.append(line.strip())  # mantém a URL separada
-                else:
-                    buffer += ' ' + line.strip()
-            if buffer:
-                new_lines.append(buffer.strip())
-
-            cleaned_paragraphs.append('\n'.join(new_lines))
-
-        # Rejunta com \n\n para manter parágrafos separados
         return '\n\n'.join(cleaned_paragraphs)
 
     def replace_description(match):
@@ -50,7 +38,7 @@ def get_modified_ics():
     if response.status_code == 200:
         ics_content = response.text
 
-        # Corrige o campo DESCRIPTION
+        # Corrige DESCRIPTIONs
         ics_content = clean_description(ics_content)
 
         return ics_content
