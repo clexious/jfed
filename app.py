@@ -7,7 +7,8 @@ from flask import Flask, Response
 app = Flask(__name__)
 
 # Sua chave da API OpenAI
-openai.api_key = "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"
+openai.api_key = "YOUR_OPENAI_API_KEY"  # Substitua com sua chave de API real
+
 ICS_SOURCE_URL = "https://jlive.app/markets/cincinnati/ics-feed/feed.ics?token=eyJwayI6ImNpbmNpbm5hdGkiLCJjb21tdW5pdHlfY2FsZW5kYXIiOnRydWV9:1u6suP:rmMCXGHV2YBVnadKQmYjW-3O19e9UPhzz8f-b-OdUU8&lg=en"
 
 def remove_html_tags(text):
@@ -18,18 +19,15 @@ def remove_html_tags(text):
 def improve_text_with_chatgpt(text):
     """Usa o ChatGPT para melhorar a formatação do texto sem alterar as palavras."""
     try:
-        # Usando a nova API com o método `ChatCompletion.create`
-        response = openai.ChatCompletion.create(
+        # Usando a nova API (openai.Completion.create)
+        response = openai.Completion.create(
             model="gpt-4",  # Especificando o modelo
-            messages=[{
-                "role": "user", 
-                "content": f"Melhore a formatação deste texto sem alterar as palavras:\n\n{text}"
-            }],
+            prompt=f"Melhore a formatação deste texto sem alterar as palavras:\n\n{text}",
             max_tokens=1000,  # Limitar o tamanho da resposta
             temperature=0.7,  # Criatividade do modelo
         )
         # Extrair o texto melhorado da resposta
-        improved_text = response['choices'][0]['message']['content'].strip()
+        improved_text = response['choices'][0]['text'].strip()
         return improved_text
     except Exception as e:
         return f"Erro ao processar o texto com o ChatGPT: {str(e)}"
