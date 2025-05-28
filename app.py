@@ -7,7 +7,8 @@ app = Flask(__name__)
 ICS_SOURCE_URL = "https://jlive.app/markets/cincinnati/ics-feed/feed.ics?token=eyJwayI6ImNpbmNpbm5hdGkiLCJjb21tdW5pdHlfY2FsZW5kYXIiOnRydWV9:1u6suP:rmMCXGHV2YBVnadKQmYjW-3O19e9UPhzz8f-b-OdUU8&lg=en"
 
 def convert_urls_to_links(text):
-    return text  # Deixa as URLs como estão (sem HTML)
+    # Garante quebra de linha correta e limpeza
+    return text.replace('\\n', '\n').replace('\\', '')
 
 
 def get_modified_ics():
