@@ -1,8 +1,8 @@
-import openai
 from flask import Flask, Response
 import requests
 import os
 import re
+import openai  # Para chamar o ChatGPT API
 
 app = Flask(__name__)
 
@@ -21,6 +21,9 @@ def improve_text_with_chatgpt(text):
         # Limitar o tamanho do texto para não ultrapassar o limite de tokens do ChatGPT
         if len(text) > 1000:
             text = text[:1000]  # Reduz o texto se for muito grande
+
+        # Exibir o texto que está sendo enviado para depuração
+        print("Texto enviado ao ChatGPT:", text)
 
         # Solicitar melhoria do texto para o ChatGPT
         response = openai.chat_completions.create(
