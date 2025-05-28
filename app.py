@@ -26,12 +26,9 @@ def improve_text_with_chatgpt(text):
         print("Texto enviado ao ChatGPT:", text)
 
         # Solicitar melhoria do texto para o ChatGPT
-        response = openai.chat_completions.create(
-            model="gpt-4",  # Usando o modelo GPT-4
-            messages=[
-                {"role": "system", "content": "Você é um assistente que ajuda a melhorar a formatação do texto."},
-                {"role": "user", "content": f"Melhore a formatação deste texto sem alterar as palavras:\n\n{text}"}
-            ],
+        response = openai.Completion.create(
+            engine="gpt-4",  # Usando o modelo GPT-4
+            prompt=f"Melhore a formatação deste texto sem alterar as palavras:\n\n{text}",
             max_tokens=1000,  # Limitar o tamanho da resposta
             temperature=0.7,  # Criatividade do modelo
         )
@@ -40,7 +37,7 @@ def improve_text_with_chatgpt(text):
         print("Resposta do ChatGPT:", response)
 
         # Extrair a resposta gerada
-        improved_text = response['choices'][0]['message']['content'].strip()
+        improved_text = response.choices[0].text.strip()
         return improved_text
     except openai.error.OpenAIError as e:
         # Captura erros específicos da API OpenAI
