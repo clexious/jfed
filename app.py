@@ -6,9 +6,20 @@ app = Flask(__name__)
 
 ICS_SOURCE_URL = "https://jlive.app/markets/cincinnati/ics-feed/feed.ics?token=eyJwayI6ImNpbmNpbm5hdGkiLCJjb21tdW5pdHlfY2FsZW5kYXIiOnRydWV9:1u6suP:rmMCXGHV2YBVnadKQmYjW-3O19e9UPhzz8f-b-OdUU8&lg=en"
 
-def convert_urls_to_links(text):
-    url_pattern = r"(https?://[^\s\\]+)"
-    return re.sub(url_pattern, r'<a href="\1">\1</a>', text)
+def sanitize_description(text):
+    # Remove underscores
+    text = text.replace("_", "")
+    
+    # Substitui **texto** por TEXTO (negrito simulado)
+    def bold_replacer(match):
+        return match.group(1).upper()
+
+    text = re.sub(r"\*\*(.*?)\*\*", bold_replacer, text)
+    
+    # Opcional: remove barras invertidas extras que atrapalham o ICS
+    text = text.replace("\\n", "\n").replace("\\", "")
+    
+    return text
 
 def get_modified_ics():
     try:
@@ -19,7 +30,8 @@ def get_modified_ics():
         for line in lines:
             if line.startswith("DESCRIPTION:"):
                 text = line[len("DESCRIPTION:"):]
-                html_text = convert_urls_to_links(text)
+                clean_text = sanitize_description(text)
+new_lines.append("DESCRIPTION:" + clean_text)
                 new_lines.append("DESCRIPTION:" + html_text)
             else:
                 new_lines.append(line)
