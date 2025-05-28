@@ -7,36 +7,42 @@ app = Flask(__name__)
 ICS_SOURCE_URL = "https://jlive.app/markets/cincinnati/ics-feed/feed.ics?token=eyJwayI6ImNpbmNpbm5hdGkiLCJjb21tdW5pdHlfY2FsZW5kYXIiOnRydWV9:1u6suP:rmMCXGHV2YBVnadKQmYjW-3O19e9UPhzz8f-b-OdUU8&lg=en"
 
 def clean_description(text):
-    # Junta quebras de linha dentro do campo DESCRIPTION quando não são finais de frase
-    def fix_linebreaks(desc):
-        return re.sub(
-            r'(?<![\.\?!:])\n(?=[a-z0-9])',  # quebra de linha antes de letra minúscula/número
-            ' ',  # substitui por espaço
-            desc
-        )
+    # Função auxiliar que limpa e reestrutura o conteúdo do DESCRIPTION
+    def fix_description(desc):
+        # Remove sublinhado
+        desc = desc.replace('_', '')
 
-    # Expressão regular para encontrar o campo DESCRIPTION
+        # Quebra em parágrafos por linha em branco
+        paragraphs = re.split(r'\n\s*\n', desc)
+
+        cleaned_paragraphs = []
+        for para in paragraphs:
+            # Junta quebras de linha únicas dentro do parágrafo
+            single_line = re.sub(r'\n+', ' ', para).strip()
+            cleaned_paragraphs.append(single_line)
+
+        # Rejunta com \n\n para manter parágrafos separados
+        return '\n\n'.join(cleaned_paragraphs)
+
+    # Regex que localiza o campo DESCRIPTION
     def replace_description(match):
-        desc_content = match.group(1)
-        fixed_content = fix_linebreaks(desc_content)
-        return f'DESCRIPTION:{fixed_content}'
+        desc = match.group(1)
+        fixed = fix_description(desc)
+        return f'DESCRIPTION:{fixed}'
 
-    # Aplica a substituição para cada campo DESCRIPTION
-    return re.sub(r'DESCRIPTION:(.*?)(?=\n[A-Z\-]+:)', replace_description, text, flags=re.DOTALL)
+    # Substitui todos os DESCRIPTIONs encontrados
+    return re.sub(r'DESCRIPTION:(.*?)(?=\n[A-Z\-]+:|\nEND:VEVENT)', replace_description, text, flags=re.DOTALL)
 
 def get_modified_ics():
     response = requests.get(ICS_SOURCE_URL)
     if response.status_code == 200:
         ics_content = response.text
 
-        # Limpa quebras e formatações em DESCRIPTION
+        # Corrige e limpa os campos DESCRIPTION
         ics_content = clean_description(ics_content)
 
-        # Adiciona quebra de linha antes de URLs
+        # Adiciona uma quebra de linha antes de URLs para maior chance de serem clicáveis
         ics_content = re.sub(r'(https?://[^\s]+)', r'\n\1', ics_content)
-
-        # Remove todos os underscores
-        ics_content = ics_content.replace('_', '')
 
         return ics_content
     else:
