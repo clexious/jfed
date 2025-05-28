@@ -1,9 +1,13 @@
 from flask import Flask, Response
 import requests
 import os
-import re  # Para remover as tags HTML
+import re
+import openai  # Para chamar o ChatGPT API
 
 app = Flask(__name__)
+
+# Sua chave da API OpenAI
+openai.api_key = "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"
 
 ICS_SOURCE_URL = "https://jlive.app/markets/cincinnati/ics-feed/feed.ics?token=eyJwayI6ImNpbmNpbm5hdGkiLCJjb21tdW5pdHlfY2FsZW5kYXIiOnRydWV9:1u6suP:rmMCXGHV2YBVnadKQmYjW-3O19e9UPhzz8f-b-OdUU8&lg=en"
 
@@ -11,6 +15,21 @@ def remove_html_tags(text):
     # Remove todas as tags HTML do texto usando regex
     clean_text = re.sub(r'<.*?>', '', text)
     return clean_text
+
+def improve_text_with_chatgpt(text):
+    try:
+        # Solicitar melhoria do texto para o ChatGPT
+        response = openai.Completion.create(
+            engine="gpt-4",  # Usando o modelo GPT-4
+            prompt=f"Melhore a formatação deste texto sem alterar as palavras:\n\n{text}",
+            max_tokens=1000,  # Limitar o tamanho da resposta
+            temperature=0.7,  # Criatividade do modelo
+        )
+        # Extrair a resposta gerada
+        improved_text = response.choices[0].text.strip()
+        return improved_text
+    except Exception as e:
+        return f"Erro ao processar o texto com o ChatGPT: {str(e)}"
 
 def get_modified_ics():
     try:
@@ -28,8 +47,11 @@ def get_modified_ics():
                 # Remove as tags HTML do conteúdo
                 x_alt_desc_content = remove_html_tags(x_alt_desc_content)
 
+                # Melhora a formatação do conteúdo com o ChatGPT
+                x_alt_desc_content = improve_text_with_chatgpt(x_alt_desc_content)
+
             if line.startswith("DESCRIPTION:"):
-                # Substitui o conteúdo do campo DESCRIPTION pelo conteúdo do campo X-ALT-DESC sem HTML
+                # Substitui o conteúdo do campo DESCRIPTION pelo conteúdo melhorado
                 new_lines.append(f"DESCRIPTION:{x_alt_desc_content}")
             else:
                 # Adiciona as outras linhas normalmente
