@@ -16,10 +16,16 @@ def sanitize_description(text):
 
     text = re.sub(r"\*\*(.*?)\*\*", bold_replacer, text)
     
-    # Opcional: remove barras invertidas extras que atrapalham o ICS
+    # Garante que URLs fiquem em nova linha (ajuda na leitura)
+    url_pattern = r"(https?://[^\s\\]+)"
+    text = re.sub(url_pattern, r"\n\1", text)
+
+    # Limpeza extra
     text = text.replace("\\n", "\n").replace("\\", "")
     
     return text
+    
+   
 
 def get_modified_ics():
     try:
