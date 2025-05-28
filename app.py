@@ -2,7 +2,7 @@ from flask import Flask, Response
 import requests
 import os
 import re
-import openai  # Para chamar o ChatGPT AP
+import openai  # Para chamar o ChatGPT API
 
 app = Flask(__name__)
 
@@ -37,22 +37,20 @@ def get_modified_ics():
         content = response.text
         lines = content.splitlines()
         new_lines = []
-        x_alt_desc_content = ""
 
         for line in lines:
-            if line.startswith("X-ALT-DESC;FMTTYPE=text/html:"):
-                # Extrai o conteúdo do campo X-ALT-DESC
-                x_alt_desc_content = line[len("X-ALT-DESC;FMTTYPE=text/html:"):]
+            if line.startswith("DESCRIPTION:"):
+                # Extrai o conteúdo do campo DESCRIPTION
+                description_content = line[len("DESCRIPTION:"):]
 
                 # Remove as tags HTML do conteúdo
-                x_alt_desc_content = remove_html_tags(x_alt_desc_content)
+                description_content = remove_html_tags(description_content)
 
                 # Melhora a formatação do conteúdo com o ChatGPT
-                x_alt_desc_content = improve_text_with_chatgpt(x_alt_desc_content)
+                description_content = improve_text_with_chatgpt(description_content)
 
-            if line.startswith("DESCRIPTION:"):
-                # Substitui o conteúdo do campo DESCRIPTION pelo conteúdo melhorado
-                new_lines.append(f"DESCRIPTION:{x_alt_desc_content}")
+                # Substitui o conteúdo do campo DESCRIPTION com o texto melhorado
+                new_lines.append(f"DESCRIPTION:{description_content}")
             else:
                 # Adiciona as outras linhas normalmente
                 new_lines.append(line)
