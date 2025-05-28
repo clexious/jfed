@@ -1,10 +1,16 @@
 from flask import Flask, Response
 import requests
 import os
+import re  # Para remover as tags HTML
 
 app = Flask(__name__)
 
 ICS_SOURCE_URL = "https://jlive.app/markets/cincinnati/ics-feed/feed.ics?token=eyJwayI6ImNpbmNpbm5hdGkiLCJjb21tdW5pdHlfY2FsZW5kYXIiOnRydWV9:1u6suP:rmMCXGHV2YBVnadKQmYjW-3O19e9UPhzz8f-b-OdUU8&lg=en"
+
+def remove_html_tags(text):
+    # Remove todas as tags HTML do texto usando regex
+    clean_text = re.sub(r'<.*?>', '', text)
+    return clean_text
 
 def get_modified_ics():
     try:
@@ -19,8 +25,11 @@ def get_modified_ics():
                 # Extrai o conteúdo do campo X-ALT-DESC
                 x_alt_desc_content = line[len("X-ALT-DESC;FMTTYPE=text/html:"):]
 
+                # Remove as tags HTML do conteúdo
+                x_alt_desc_content = remove_html_tags(x_alt_desc_content)
+
             if line.startswith("DESCRIPTION:"):
-                # Substitui o conteúdo do campo DESCRIPTION pelo conteúdo do campo X-ALT-DESC
+                # Substitui o conteúdo do campo DESCRIPTION pelo conteúdo do campo X-ALT-DESC sem HTML
                 new_lines.append(f"DESCRIPTION:{x_alt_desc_content}")
             else:
                 # Adiciona as outras linhas normalmente
