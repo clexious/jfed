@@ -14,14 +14,14 @@ app = Flask(__name__)
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # ICS Feed URL
-ICS_SOURCE_URL = "https://jlive.app/markets/cincinnati/ics-feed/feed.ics?token=your_token&lg=en"
+ICS_SOURCE_URL = "https://jlive.app/markets/cincinnati/ics-feed/feed.ics?token=eyJwayI6ImNpbmNpbm5hdGkiLCJjb21tdW5pdHlfY2FsZW5kYXIiOnRydWV9:1u6suP:rmMCXGHV2YBVnadKQmYjW-3O19e9UPhzz8f-b-OdUU8&lg=en"
 
 def improve_text_with_chatgpt(text):
     """Enhance text formatting using ChatGPT."""
     try:
         response = openai.Completion.create(
             model="gpt-4",
-            prompt=f"Improve the formatting of this text without changing its meaning:\n\n{text}",
+            prompt=f"Improve the formatting of this text without changing the words:\n\n{text}",
             max_tokens=1000,
             temperature=0.7,
         )
