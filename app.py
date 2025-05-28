@@ -7,24 +7,34 @@ app = Flask(__name__)
 ICS_SOURCE_URL = "https://jlive.app/markets/cincinnati/ics-feed/feed.ics?token=eyJwayI6ImNpbmNpbm5hdGkiLCJjb21tdW5pdHlfY2FsZW5kYXIiOnRydWV9:1u6suP:rmMCXGHV2YBVnadKQmYjW-3O19e9UPhzz8f-b-OdUU8&lg=en"
 
 def sanitize_description(text):
+    # Remove underscores
     text = text.replace("_", "")
     
+    # Simula negrito: **texto** → TEXTO
     def bold_replacer(match):
         return match.group(1).upper()
     text = re.sub(r"\*\*(.*?)\*\*", bold_replacer, text)
 
+    # Corrige vírgulas escapadas
     text = text.replace("\\,", ",")
+
+    # Remove \n e barras invertidas
     text = text.replace("\\n", " ").replace("\\", " ")
 
+    # URLs em nova linha
     url_pattern = r"(https?://[^\s]+)"
     text = re.sub(url_pattern, r"\n\1", text)
 
+    # Remove espaços duplicados
     text = re.sub(r" +", " ", text)
+
+    # Quebra de parágrafo após ponto final (sem quebrar URLs)
     text = re.sub(r"(?<!\w)(\.)(\s+)", r".\n\n", text)
+
+    # Remove espaços antes de quebras de linha
     text = re.sub(r" *\n", "\n", text)
 
-    paragraphs = [f"<p>{line.strip()}</p>" for line in text.strip().split("\n\n") if line.strip()]
-    return "\n".join(paragraphs)
+    return text.strip()
 
 def extract_organizer(description):
     match = re.search(r"Organized by:\s*(.*)", description, re.IGNORECASE)
