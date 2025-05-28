@@ -22,6 +22,9 @@ def improve_text_with_chatgpt(text):
         if len(text) > 1000:
             text = text[:1000]  # Reduz o texto se for muito grande
 
+        # Exibir o texto que está sendo enviado para depuração
+        print("Texto enviado ao ChatGPT:", text)
+
         # Solicitar melhoria do texto para o ChatGPT
         response = openai.Completion.create(
             engine="gpt-4",  # Usando o modelo GPT-4
@@ -36,10 +39,14 @@ def improve_text_with_chatgpt(text):
         # Extrair a resposta gerada
         improved_text = response.choices[0].text.strip()
         return improved_text
+    except openai.error.OpenAIError as e:
+        # Captura erros específicos da API OpenAI
+        print(f"Erro na API do ChatGPT: {str(e)}")
+        return f"Erro na API do ChatGPT: {str(e)}"
     except Exception as e:
-        # Exibir a exceção detalhada para diagnóstico
-        print(f"Erro ao processar o texto com o ChatGPT: {str(e)}")
-        return f"Erro ao processar o texto com o ChatGPT: {str(e)}"
+        # Captura erros gerais
+        print(f"Erro inesperado: {str(e)}")
+        return f"Erro inesperado: {str(e)}"
 
 def get_modified_ics():
     try:
