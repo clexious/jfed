@@ -7,14 +7,10 @@ app = Flask(__name__)
 ICS_SOURCE_URL = "https://jlive.app/markets/cincinnati/ics-feed/feed.ics?token=eyJwayI6ImNpbmNpbm5hdGkiLCJjb21tdW5pdHlfY2FsZW5kYXIiOnRydWV9:1u6suP:rmMCXGHV2YBVnadKQmYjW-3O19e9UPhzz8f-b-OdUU8&lg=en"
 
 def sanitize_description(text):
-    # Substitui literalmente os padrões \\n e \\,
-    text = text.replace("\\\\n", " ").replace("\\\\,", ",")
-    
-    # Substitui padrões simples \n e \, também (caso o texto já venha decodificado)
-    text = text.replace("\\n", " ").replace("\\,", ",")
-
-    # Remove barras invertidas restantes
-    text = text.replace("\\", "")
+    # Substitui todos os tipos de \\, \n e \, com regex (colados ou não)
+    text = re.sub(r"\\\\n|\\n", "\n", text)      # quebra de linha
+    text = re.sub(r"\\\\,|\\,", ",", text)       # vírgula normal
+    text = text.replace("\\", "")                # remove qualquer barra extra
 
     # Remove underscores
     text = text.replace("_", "")
@@ -28,16 +24,17 @@ def sanitize_description(text):
     # Remove espaços duplicados
     text = re.sub(r" +", " ", text)
 
-    # Quebra de parágrafo após ponto final (evita URLs)
+    # Quebra de parágrafo após ponto final
     text = re.sub(r"\.(\s+)", ".\n\n", text)
 
-    # Remove espaços antes de quebras de linha
+    # Remove espaços antes das quebras
     text = re.sub(r" *\n", "\n", text)
 
-    # Remove quebras de linha duplicadas extras (garante apenas 2 no máximo)
+    # Evita múltiplas quebras de linha seguidas
     text = re.sub(r"\n{3,}", "\n\n", text)
 
     return text.strip()
+
 
 def extract_organizer(description):
     match = re.search(r"Organized by:\s*(.*)", description, re.IGNORECASE)
