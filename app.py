@@ -7,30 +7,42 @@ app = Flask(__name__)
 ICS_SOURCE_URL = "https://jlive.app/markets/cincinnati/ics-feed/feed.ics?token=eyJwayI6ImNpbmNpbm5hdGkiLCJjb21tdW5pdHlfY2FsZW5kYXIiOnRydWV9:1u6suP:rmMCXGHV2YBVnadKQmYjW-3O19e9UPhzz8f-b-OdUU8&lg=en"
 
 def clean_description(text):
-    # Função auxiliar que limpa e reestrutura o conteúdo do DESCRIPTION
+    # Função que limpa e reestrutura o conteúdo do campo DESCRIPTION
     def fix_description(desc):
         # Remove sublinhado
         desc = desc.replace('_', '')
 
-        # Quebra em parágrafos por linha em branco
+        # Divide por parágrafos (dupla quebra de linha ou linha em branco)
         paragraphs = re.split(r'\n\s*\n', desc)
 
         cleaned_paragraphs = []
         for para in paragraphs:
-            # Junta quebras de linha únicas dentro do parágrafo
-            single_line = re.sub(r'\n+', ' ', para).strip()
-            cleaned_paragraphs.append(single_line)
+            lines = para.strip().split('\n')
+            new_lines = []
+
+            buffer = ""
+            for line in lines:
+                if re.match(r'^https?://', line.strip()):
+                    # Se a linha anterior tiver conteúdo acumulado, adiciona
+                    if buffer:
+                        new_lines.append(buffer.strip())
+                        buffer = ""
+                    new_lines.append(line.strip())  # mantém a URL separada
+                else:
+                    buffer += ' ' + line.strip()
+            if buffer:
+                new_lines.append(buffer.strip())
+
+            cleaned_paragraphs.append('\n'.join(new_lines))
 
         # Rejunta com \n\n para manter parágrafos separados
         return '\n\n'.join(cleaned_paragraphs)
 
-    # Regex que localiza o campo DESCRIPTION
     def replace_description(match):
         desc = match.group(1)
         fixed = fix_description(desc)
         return f'DESCRIPTION:{fixed}'
 
-    # Substitui todos os DESCRIPTIONs encontrados
     return re.sub(r'DESCRIPTION:(.*?)(?=\n[A-Z\-]+:|\nEND:VEVENT)', replace_description, text, flags=re.DOTALL)
 
 def get_modified_ics():
@@ -38,11 +50,8 @@ def get_modified_ics():
     if response.status_code == 200:
         ics_content = response.text
 
-        # Corrige e limpa os campos DESCRIPTION
+        # Corrige o campo DESCRIPTION
         ics_content = clean_description(ics_content)
-
-        # Adiciona uma quebra de linha antes de URLs para maior chance de serem clicáveis
-        ics_content = re.sub(r'(https?://[^\s]+)', r'\n\1', ics_content)
 
         return ics_content
     else:
