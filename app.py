@@ -7,7 +7,7 @@ from flask import Flask, Response
 app = Flask(__name__)
 
 # Sua chave da API OpenAI
-openai.api_key = "YOUR_OPENAI_API_KEY"  # Substitua com sua chave de API real
+openai.api_key = "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"  # Substitua com sua chave de API real
 
 ICS_SOURCE_URL = "https://jlive.app/markets/cincinnati/ics-feed/feed.ics?token=eyJwayI6ImNpbmNpbm5hdGkiLCJjb21tdW5pdHlfY2FsZW5kYXIiOnRydWV9:1u6suP:rmMCXGHV2YBVnadKQmYjW-3O19e9UPhzz8f-b-OdUU8&lg=en"
 
