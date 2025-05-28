@@ -2,7 +2,7 @@ from flask import Flask, Response
 import requests
 import os
 import re
-import openai  # Para chamar o ChatGPT API
+import openai  # Para chamar o ChatGPT AP
 
 app = Flask(__name__)
 
