@@ -18,13 +18,6 @@ def remove_html_tags(text):
 
 def improve_text_with_chatgpt(text):
     try:
-        # Limitar o tamanho do texto para não ultrapassar o limite de tokens do ChatGPT
-        if len(text) > 1000:
-            text = text[:1000]  # Reduz o texto se for muito grande
-
-        # Exibir o texto que está sendo enviado para depuração
-        print("Texto enviado ao ChatGPT:", text)
-
         # Solicitar melhoria do texto para o ChatGPT
         response = openai.Completion.create(
             engine="gpt-4",  # Usando o modelo GPT-4
@@ -32,21 +25,11 @@ def improve_text_with_chatgpt(text):
             max_tokens=1000,  # Limitar o tamanho da resposta
             temperature=0.7,  # Criatividade do modelo
         )
-
-        # Exibir a resposta da API para depuração
-        print("Resposta do ChatGPT:", response)
-
         # Extrair a resposta gerada
         improved_text = response.choices[0].text.strip()
         return improved_text
-    except openai.error.OpenAIError as e:
-        # Captura erros específicos da API OpenAI
-        print(f"Erro na API do ChatGPT: {str(e)}")
-        return f"Erro na API do ChatGPT: {str(e)}"
     except Exception as e:
-        # Captura erros gerais
-        print(f"Erro inesperado: {str(e)}")
-        return f"Erro inesperado: {str(e)}"
+        return f"Erro ao processar o texto com o ChatGPT: {str(e)}"
 
 def get_modified_ics():
     try:
@@ -75,7 +58,6 @@ def get_modified_ics():
         return "\n".join(new_lines)
 
     except Exception as e:
-        print(f"Erro ao obter o conteúdo ICS: {str(e)}")
         return f"BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:ERROR\nDESCRIPTION:{str(e)}\nEND:VCALENDAR"
 
 @app.route("/custom-feed.ics")
