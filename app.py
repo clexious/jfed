@@ -7,21 +7,6 @@ app = Flask(__name__)
 
 ICS_SOURCE_URL = "https://jlive.app/markets/cincinnati/ics-feed/feed.ics?token=eyJwayI6ImNpbmNpbm5hdGkiLCJjb21tdW5pdHlfY2FsZW5kYXIiOnRydWV9:1u6suP:rmMCXGHV2YBVnadKQmYjW-3O19e9UPhzz8f-b-OdUU8&lg=en"
 
-# Texto puro
-def sanitize_description(text):
-    text = text.replace("_", "")
-    text = re.sub(r"\*\*(.*?)\*\*", lambda m: m.group(1).upper(), text)
-    text = text.replace("\\n", "\n").replace("\\", "")
-    return text
-
-# HTML formatado
-def generate_html_description(text):
-    text = text.replace("_", "")
-    text = re.sub(r"\*\*(.*?)\*\*", r"<b>\1</b>", text)
-    text = re.sub(r"(https?://[^\s\\]+)", r'<a href="\1">\1</a>', text)
-    text = text.replace("\\n", "<br>").replace("\n", "<br>")
-    return f"<html><body>{text}</body></html>"
-
 def get_modified_ics():
     try:
         response = requests.get(ICS_SOURCE_URL)
@@ -32,8 +17,6 @@ def get_modified_ics():
             line = lines[i]
             if line.startswith("DESCRIPTION:"):
                 raw_text = line[len("DESCRIPTION:"):]
-                clean_text = sanitize_description(raw_text)
-                html_text = generate_html_description(raw_text)
 
                 new_lines.append("DESCRIPTION:" + clean_text)
                 new_lines.append("X-ALT-DESC;FMTTYPE=text/html:" + html_text)
