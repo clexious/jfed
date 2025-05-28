@@ -14,12 +14,20 @@ def get_modified_ics():
         new_lines = []
         for line in lines:
             if line.startswith("DESCRIPTION:"):
-                # Substitui o conteúdo de DESCRIPTION com o conteúdo de X-ALT-DESC
-                x_alt_desc_line = "X-ALT-DESC;FMTTYPE=text/html:" + line[len("DESCRIPTION:"):]
-                new_lines.append(x_alt_desc_line)  # Adiciona o X-ALT-DESC
+                # Extrai o conteúdo de DESCRIPTION
+                description_content = line[len("DESCRIPTION:"):]
+
+                # Cria a linha X-ALT-DESC com o mesmo conteúdo de DESCRIPTION
+                x_alt_desc_line = f"X-ALT-DESC;FMTTYPE=text/html:{description_content}"
+
+                # Substitui DESCRIPTION por X-ALT-DESC
+                new_lines.append(x_alt_desc_line)
             else:
+                # Para as linhas que não são DESCRIPTION, adicione normalmente
                 new_lines.append(line)
+
         return "\n".join(new_lines)
+
     except Exception as e:
         return f"BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:ERROR\nDESCRIPTION:{str(e)}\nEND:VCALENDAR"
 
